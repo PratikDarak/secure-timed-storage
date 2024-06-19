@@ -14,7 +14,7 @@ export default defineConfig({
 			entry: resolve(__dirname, 'src/secureTimedStorage.ts'),
 			name: 'secure-timed-storage',
 			formats: ['es', 'cjs'],
-			fileName: (format) => `${format}/index-${format}`,
+			fileName: (format) => `${format}/index-${format}.js`,
 		},
 		rollupOptions: {
 			external: ['crypto-js'],
