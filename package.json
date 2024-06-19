@@ -2,7 +2,6 @@
 	"name": "secure-timed-storage",
 	"description": "Secure timed storage library for encrypting and managing data in localStorage with expiry",
 	"version": "1.1.0",
-	"type": "module",
 	"license": "MIT",
 	"author": {
 		"name": "Pratik Darak",
