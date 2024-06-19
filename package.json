@@ -17,7 +17,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/PratikDarak/free-monk/secure-timed-storage"
+		"url": "https://github.com/PratikDarak/secure-timed-storage"
 	},
 	"main": "./dist/cjs/index-cjs.js",
 	"module": "./dist/es/index-es.js",
