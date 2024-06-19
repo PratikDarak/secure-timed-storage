@@ -1,0 +1,65 @@
+{
+	"name": "secure-timed-storage",
+	"description": "Secure timed storage library for encrypting and managing data in localStorage with expiry",
+	"version": "1.0.0",
+	"type": "module",
+	"license": "MIT",
+	"author": {
+		"name": "Pratik Darak",
+		"email": "pratikdarak@gmail.com"
+	},
+	"keywords": [
+		"Local Storage",
+		"Secure Local Storage",
+		"Timed Local Storage",
+		"Secure Timed Local Storage",
+		"Encrypt Storage"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/PratikDarak/free-monk/secure-timed-storage"
+	},
+	"main": "./dist/cjs/index-cjs.js",
+	"module": "./dist/es/index-es.js",
+	"types": "./dist/types.d.ts",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"import": "./dist/es/index-es.js",
+			"require": "./dist/cjs/index-cjs.js",
+			"default": "./dist/es/index-es.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc && vite build",
+		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+		"lint:fix": "npm run lint -- --fix",
+		"format": "prettier . --ignore-unknown --write",
+		"format:check": "prettier . --ignore-unknown --check",
+		"prepare": "husky",
+		"test": "vitest"
+	},
+	"dependencies": {
+		"crypto-js": "^4.2.0"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^19.3.0",
+		"@commitlint/config-conventional": "^19.2.2",
+		"@types/crypto-js": "^4.2.2",
+		"husky": "^9.0.11",
+		"lint-staged": "^15.2.7",
+		"prettier": "^3.3.2",
+		"typescript": "^5.2.2",
+		"vite": "^5.2.0",
+		"vite-plugin-dts": "^3.9.1",
+		"vitest": "^1.6.0"
+	},
+	"lint-staged": {
+		"*.{ts,tsx}": [
+			"eslint --fix",
+			"prettier --ignore-unknown --write"
+		]
+	}
+}

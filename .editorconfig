@@ -1,0 +1,20 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = tab
+indent_size = 4
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# YAML Files
+[*.yml]
+indent_style = space
+
+# Don't strip trailing whitespace in markdown file
+# When you do want to insert a <br /> break tag using Markdown, you end a line
+# with two or more spaces, then type return.
+# see https://daringfireball.net/projects/markdown/syntax#p
+[*.{md,mdx}]
+trim_trailing_whitespace = false
