@@ -1,5 +1,23 @@
 import * as CryptoJS from 'crypto-js';
-import { EncryptedData, IStorage, StorageInfo } from './types';
+
+interface EncryptedData {
+	value: any;
+	expiry: number | null;
+}
+
+interface StorageInfo {
+	usedBytes: number;
+	remainingBytes: number;
+}
+
+interface IStorage {
+	setItem(key: string, value: any, expiryInHours?: number | null): void;
+	getItem(key: string): any | null;
+	removeItem(key: string): void;
+	getRemainingStorage(): StorageInfo;
+	cleanUp(): void;
+	query(predicate: (item: any) => boolean): any[];
+}
 
 interface SecureTimedStorageOptions {
 	encryptionKey: string;

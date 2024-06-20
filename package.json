@@ -1,7 +1,7 @@
 {
 	"name": "secure-timed-storage",
 	"description": "Secure timed storage library for encrypting and managing data in localStorage with expiry",
-	"version": "1.1.0",
+	"version": "1.3.0",
 	"license": "MIT",
 	"author": {
 		"name": "Pratik Darak",
@@ -35,7 +35,7 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts",
+		"build": "tsc && vite build",
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"lint:fix": "npm run lint -- --fix",
 		"format": "prettier . --ignore-unknown --write",
@@ -52,7 +52,6 @@
 		"@types/crypto-js": "^4.2.2",
 		"@typescript-eslint/eslint-plugin": "^6.19.1",
 		"@typescript-eslint/parser": "^6.19.1",
-		"dts-bundle-generator": "^9.5.1",
 		"eslint": "^8.56.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-prettier": "^5.1.3",
@@ -61,6 +60,7 @@
 		"prettier": "^3.3.2",
 		"typescript": "^5.2.2",
 		"vite": "^5.2.0",
+		"vite-plugin-dts": "^3.9.1",
 		"vitest": "^1.6.0"
 	},
 	"lint-staged": {

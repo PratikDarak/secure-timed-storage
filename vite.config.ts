@@ -1,5 +1,6 @@
 import path from 'path';
 import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 import packageJson from './package.json';
 
 const getPackageName = () => {
@@ -13,10 +14,9 @@ const fileName = {
 
 const formats = Object.keys(fileName) as Array<keyof typeof fileName>;
 
-module.exports = defineConfig({
+export default defineConfig({
+	plugins: [dts({ rollupTypes: true })],
 	build: {
-		emptyOutDir: true,
-		outDir: './dist',
 		lib: {
 			entry: path.resolve(__dirname, 'src/secureTimedStorage.ts'),
 			name: getPackageName(),
