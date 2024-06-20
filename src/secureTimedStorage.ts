@@ -5,12 +5,12 @@ interface EncryptedData {
 	expiry: number | null;
 }
 
-interface StorageInfo {
+export interface StorageInfo {
 	usedBytes: number;
 	remainingBytes: number;
 }
 
-interface IStorage {
+export interface IStorage {
 	setItem(key: string, value: any, expiryInHours?: number | null): void;
 	getItem(key: string): any | null;
 	removeItem(key: string): void;
@@ -19,7 +19,7 @@ interface IStorage {
 	query(predicate: (item: any) => boolean): any[];
 }
 
-interface SecureTimedStorageOptions {
+export interface SecureTimedStorageOptions {
 	encryptionKey: string;
 }
 

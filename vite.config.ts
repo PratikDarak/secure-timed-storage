@@ -3,25 +3,18 @@ import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import packageJson from './package.json';
 
-const getPackageName = () => {
-	return packageJson.name;
-};
+const getPackageNameCamelCase = () => packageJson.name.replace(/-./g, (char) => char[1].toUpperCase());
 
-const fileName = {
-	es: `${getPackageName()}.mjs`,
-	cjs: `${getPackageName()}.cjs`,
-};
-
-const formats = Object.keys(fileName) as Array<keyof typeof fileName>;
+const packageName = packageJson.name.split('/').pop() || packageJson.name;
 
 export default defineConfig({
 	plugins: [dts({ rollupTypes: true })],
 	build: {
 		lib: {
-			entry: path.resolve(__dirname, 'src/secureTimedStorage.ts'),
-			name: getPackageName(),
-			formats,
-			fileName: (format) => fileName[format],
+			entry: path.resolve(__dirname, 'src/index.ts'),
+			formats: ['es', 'cjs', 'umd', 'iife'],
+			name: getPackageNameCamelCase(),
+			fileName: packageName,
 		},
 		rollupOptions: {
 			external: ['crypto-js'],
