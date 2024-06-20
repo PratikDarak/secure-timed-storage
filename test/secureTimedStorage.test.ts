@@ -1,5 +1,5 @@
 import { suite, test, assert, beforeEach } from 'vitest';
-import createSecureTimedStorage from '../src/secureTimedStorage';
+import { createSecureTimedStorage } from '../src/secureTimedStorage';
 
 const localStorageMock = (() => {
 	let store: Record<string, string> = {};

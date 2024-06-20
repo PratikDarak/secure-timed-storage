@@ -23,7 +23,7 @@ export interface SecureTimedStorageOptions {
 	encryptionKey: string;
 }
 
-export default function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOptions): IStorage {
+export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOptions): IStorage {
 	const setItem = (key: string, value: any, expiryInHours: number | null = null): void => {
 		const expiry = expiryInHours !== null ? Date.now() + expiryInHours * 3600000 : null;
 		const encryptedValue = encryptData({ value, expiry });

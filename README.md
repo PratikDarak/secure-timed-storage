@@ -25,7 +25,7 @@ yarn add secure-timed-storage
 
 Importing the Library
 ```bash
-import createSecureTimedStorage from 'secure-timed-storage';
+import { createSecureTimedStorage } from 'secure-timed-storage';
 ```
 
 Initializing Secure Timed Storage
@@ -61,7 +61,7 @@ storage.removeItem('myKey');
 
 Here's a simple example demonstrating basic usage:
 ```bash
-import createSecureTimedStorage from 'secure-timed-storage';
+import { createSecureTimedStorage } from 'secure-timed-storage';
 
 const secretKey = 'your_secret_key_here';
 const storage = createSecureTimedStorage({ encryptionKey: secretKey });
