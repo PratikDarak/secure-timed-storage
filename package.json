@@ -28,10 +28,6 @@
 		".": {
 			"import": "./dist/secure-timed-storage.cjs",
 			"require": "./dist/secure-timed-storage.mjs"
-		},
-		"./dist/": {
-			"import": "./dist/",
-			"require": "./dist/"
 		}
 	},
 	"scripts": {
