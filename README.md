@@ -2,6 +2,16 @@
 
 Secure Timed Storage is a TypeScript library for securely encrypting and managing data in the browser's localStorage with expiration functionality. It provides an easy-to-use API to store sensitive or temporary data securely.
 
+## Description
+
+Local storage in browsers is a useful feature for storing data on the client side, but it has two major concerns:
+1. **Data Security**: By default, data stored in local storage is not encrypted, making it accessible to anyone who has access to the browser’s developer tools. This lack of security can be problematic when storing sensitive information such as authentication tokens, user details, or other confidential data.
+2. **Expiry Management**: Local storage does not natively support setting expiry times for stored items. Data stored remains until explicitly removed, which can lead to outdated or stale data persisting indefinitely.
+
+Secure Timed Storage addresses these issues by:
+- **Encrypting Data**: Ensuring that all data stored in local storage is securely encrypted using AES encryption from the `crypto-js` library. This protects sensitive information from being easily accessed or tampered with.
+- **Setting Expiry Times**: Allowing developers to specify an expiration time for each stored item. The library automatically handles the removal of expired data, ensuring that local storage only contains relevant and up-to-date information.
+
 ## Features
 
 - **Encryption**: Encrypts data before storing it in localStorage using AES encryption from `crypto-js`.
@@ -75,6 +85,21 @@ console.log(token); # { token: 'abc123' }
 
 # Clean up expired data (optional)
 storage.cleanUp();
+```
+
+## Error Handling
+The library includes error handling for encryption and decryption failures. For example, if the encryption key is invalid or the data in localStorage is tampered with, appropriate errors are thrown and logged.
+```bash
+try {
+    storage.setItem('invalidKey', { foo: 'bar' }, 1);
+} catch (error) {
+    console.error('Failed to set item:', error.message);
+}
+
+const data = storage.getItem('invalidKey');
+if (data === null) {
+    console.warn('Failed to retrieve item or item has expired.');
+}
 ```
 
 ## Contributing

@@ -1,6 +1,6 @@
 {
 	"name": "secure-timed-storage",
-	"version": "1.3.5",
+	"version": "1.3.6",
 	"type": "module",
 	"description": "Secure timed storage library for encrypting and managing data in localStorage with expiry",
 	"license": "MIT",

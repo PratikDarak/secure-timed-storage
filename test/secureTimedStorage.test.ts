@@ -1,21 +1,25 @@
 import { suite, test, assert, beforeEach } from 'vitest';
 import { createSecureTimedStorage } from '../src/secureTimedStorage';
+import type { IStorage, SecureTimedStorageOptions } from '../src/secureTimedStorage';
 
-const localStorageMock = (() => {
-	let store: Record<string, string> = {};
+let localStorageMock = (() => {
+	const store: Record<string, string> = {};
 
 	return {
-		getItem: function (key: string) {
+		store,
+		setItem: (key: string, val: string): void => {
+			store[key] = val;
+		},
+		getItem: (key: string): string | null => {
 			return store[key] || null;
 		},
-		setItem: function (key: string, value: string) {
-			store[key] = value.toString();
-		},
-		removeItem: function (key: string) {
+		removeItem: (key: string): void => {
 			delete store[key];
 		},
-		clear: function () {
-			store = {};
+		clear: (): void => {
+			Object.keys(store).forEach((key) => {
+				delete store[key];
+			});
 		},
 		key: function (index: number) {
 			const keys = Object.keys(store);
@@ -27,21 +31,35 @@ const localStorageMock = (() => {
 	};
 })();
 
-// Assign localStorageMock to global.localStorage
-global.localStorage = localStorageMock;
+// Creating a Proxy to handle Object.keys correctly
+localStorageMock = new Proxy(localStorageMock, {
+	ownKeys: (target): string[] => {
+		return Object.keys(target.store);
+	},
+	getOwnPropertyDescriptor: (): PropertyDescriptor => {
+		return {
+			enumerable: true,
+			configurable: true,
+		};
+	},
+});
+
+// Replace the global localStorage with the mock
+Object.defineProperty(global, 'localStorage', { value: localStorageMock });
 
 suite('Secure Timed Storage', () => {
-	let storage: ReturnType<typeof createSecureTimedStorage>;
+	let storage: IStorage;
+	const encryptionKey = 'test_secret_key';
+	const options: SecureTimedStorageOptions = { encryptionKey };
 
 	beforeEach(() => {
 		localStorage.clear();
-		const secretKey = 'test_secret_key';
-		storage = createSecureTimedStorage({ encryptionKey: secretKey });
+		storage = createSecureTimedStorage(options);
 	});
 
 	test('should store and retrieve encrypted data', () => {
-		const data = { name: 'John Doe' };
 		const key = 'myKey';
+		const data = { name: 'John Doe' };
 
 		storage.setItem(key, data);
 
@@ -50,24 +68,24 @@ suite('Secure Timed Storage', () => {
 	});
 
 	test('should remove item after expiry time', async () => {
-		const data = { name: 'John Doe' };
 		const key = 'myKey';
+		const data = { name: 'John Doe' };
 
 		// Set item with 1 second expiry for testing
-		storage.setItem(key, data, 0.0003); // 0.0003 hours = approximately 1 second
+		storage.setItem(key, data, 0.0001); // 0.0001 hours = approximately 0.5 second
 
 		// Wait for 1.5 seconds (1500 ms) to ensure item has expired
-		await new Promise((resolve) => setTimeout(resolve, 1500));
+		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		const retrievedData = storage.getItem(key);
 		assert.equal(retrievedData, null);
 	});
 
 	test('should store and retrieve multiple items', () => {
-		const data1 = { name: 'John Doe' };
-		const data2 = { name: 'Jane Smith' };
 		const key1 = 'key1';
+		const data1 = { name: 'John Doe' };
 		const key2 = 'key2';
+		const data2 = { name: 'Jane Smith' };
 
 		storage.setItem(key1, data1);
 		storage.setItem(key2, data2);
@@ -80,8 +98,8 @@ suite('Secure Timed Storage', () => {
 	});
 
 	test('should remove item', () => {
-		const data = { name: 'John Doe' };
 		const key = 'myKey';
+		const data = { name: 'John Doe' };
 
 		storage.setItem(key, data);
 		storage.removeItem(key);
@@ -90,11 +108,45 @@ suite('Secure Timed Storage', () => {
 		assert.equal(retrievedData, null);
 	});
 
+	test('should accurately calculate remaining storage', () => {
+		const key1 = 'key1';
+		const data1 = 'a'.repeat(1000);
+		const key2 = 'key2';
+		const data2 = 'b'.repeat(1000);
+
+		storage.setItem(key1, data1);
+		storage.setItem(key2, data2);
+
+		const expectedUsedBytes = key1.length + key2.length + (localStorage.getItem(key1)?.length || 0) + (localStorage.getItem(key2)?.length || 0);
+
+		const storageInfo = storage.getRemainingStorage();
+
+		assert.equal(storageInfo.usedBytes, expectedUsedBytes);
+		assert.equal(storageInfo.remainingBytes, 5 * 1024 * 1024 - expectedUsedBytes); // Assuming 5MB limit
+	});
+
+	test('should remove expired items during clean up', async () => {
+		const key = 'myKey';
+		const data = { name: 'John Doe' };
+
+		// Set item with 1 second expiry for testing
+		storage.setItem(key, data, 0.0001); // 0.0001 hours = approximately 0.5 second
+
+		assert.isNotNull(localStorage.getItem(key));
+
+		// Wait for 1.5 seconds (1500 ms) to ensure item has expired
+		await new Promise((resolve) => setTimeout(resolve, 500));
+
+		storage.cleanUp();
+
+		assert.isNull(localStorage.getItem(key));
+	});
+
 	test('should query items based on criteria', () => {
-		const data1 = { type: 'user', name: 'John Doe' };
-		const data2 = { type: 'admin', name: 'Jane Smith' };
 		const key1 = 'user1';
+		const data1 = { type: 'user', name: 'John Doe' };
 		const key2 = 'admin1';
+		const data2 = { type: 'admin', name: 'Jane Smith' };
 
 		storage.setItem(key1, data1);
 		storage.setItem(key2, data2);
@@ -106,8 +158,8 @@ suite('Secure Timed Storage', () => {
 	});
 
 	test('should expire item immediately', async () => {
-		const data = { name: 'John Doe' };
 		const key = 'myKey';
+		const data = { name: 'John Doe' };
 
 		// Set item with 0 expiry (should expire immediately)
 		storage.setItem(key, data, 0);
@@ -119,12 +171,44 @@ suite('Secure Timed Storage', () => {
 	});
 
 	test('should handle large data', () => {
-		const largeData = { data: 'x'.repeat(5000) }; // Large data string
 		const key = 'largeData';
+		const largeData = { data: 'x'.repeat(5000) }; // Large data string
 
 		storage.setItem(key, largeData);
 
 		const retrievedData = storage.getItem(key);
 		assert.deepEqual(retrievedData, largeData);
+	});
+
+	test('should fail to get item if the data is manually edited to an invalid state in localStorage', () => {
+		const key = 'myKey';
+		const data = { name: 'John Doe' };
+
+		storage.setItem(key, data, 1);
+
+		// Manually edit the item in localStorage to an invalid state
+		localStorage.setItem(key, 'invalid data');
+
+		const result = storage.getItem(key);
+		assert.equal(result, null);
+	});
+
+	test('should handle error when setting an item with invalid encryption key', () => {
+		const encryptionKey: any = null; // Temporarily modify the encryption key to an invalid one
+		const invalidStorage = createSecureTimedStorage({ encryptionKey });
+
+		const key = 'myKey';
+		const data = { name: 'John Doe' };
+
+		try {
+			invalidStorage.setItem(key, data, 1);
+		} catch (error) {
+			assert.instanceOf(error, Error);
+			assert.equal(error.message, 'Failed to set item');
+		}
+
+		// Ensure that no item is stored in localStorage
+		const storedItem = localStorage.getItem(key);
+		assert.equal(storedItem, null);
 	});
 });

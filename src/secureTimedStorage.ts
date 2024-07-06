@@ -25,9 +25,14 @@ export interface SecureTimedStorageOptions {
 
 export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOptions): IStorage {
 	const setItem = (key: string, value: any, expiryInHours: number | null = null): void => {
-		const expiry = expiryInHours !== null ? Date.now() + expiryInHours * 3600000 : null;
-		const encryptedValue = encryptData({ value, expiry });
-		localStorage.setItem(key, encryptedValue);
+		try {
+			const expiry = expiryInHours !== null ? Date.now() + expiryInHours * 3600000 : null;
+			const encryptedValue = encryptData({ value, expiry });
+			localStorage.setItem(key, encryptedValue);
+		} catch (error) {
+			console.error('Failed to set item', error);
+			throw new Error('Failed to set item');
+		}
 	};
 
 	const getItem = (key: string): any | null => {
@@ -36,13 +41,17 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 			return null;
 		}
 
-		const decryptedValue = decryptData(item);
-		if (decryptedValue.expiry && Date.now() > decryptedValue.expiry) {
-			localStorage.removeItem(key);
+		try {
+			const decryptedValue = decryptData(item);
+			if (decryptedValue.expiry && Date.now() > decryptedValue.expiry) {
+				localStorage.removeItem(key);
+				return null;
+			}
+			return decryptedValue.value;
+		} catch (error) {
+			console.error('Failed to get item', error);
 			return null;
 		}
-
-		return decryptedValue.value;
 	};
 
 	const removeItem = (key: string): void => {
@@ -66,7 +75,7 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 		allKeys.forEach((key) => {
 			const item = getItem(key);
 			if (item && item.expiry && Date.now() > item.expiry) {
-				localStorage.removeItem(key);
+				removeItem(key);
 			}
 		});
 	};
@@ -86,13 +95,23 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 	};
 
 	const encryptData = (data: EncryptedData): string => {
-		return CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString();
+		try {
+			return CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString();
+		} catch (error) {
+			console.error('Encryption failed', error);
+			throw new Error('Encryption failed');
+		}
 	};
 
 	const decryptData = (ciphertext: string): EncryptedData => {
-		const bytes = CryptoJS.AES.decrypt(ciphertext, encryptionKey);
-		const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-		return decryptedData;
+		try {
+			const bytes = CryptoJS.AES.decrypt(ciphertext, encryptionKey);
+			const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+			return decryptedData;
+		} catch (error) {
+			console.error('Decryption failed', error);
+			throw new Error('Decryption failed');
+		}
 	};
 
 	return {
