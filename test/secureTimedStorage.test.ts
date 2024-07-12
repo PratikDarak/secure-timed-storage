@@ -63,7 +63,7 @@ suite('Secure Timed Storage', () => {
 
 		storage.setItem(key, data);
 
-		const retrievedData = storage.getItem(key);
+		const retrievedData = storage.getItem<{ name: string }>(key);
 		assert.deepEqual(retrievedData, data);
 	});
 
@@ -71,13 +71,13 @@ suite('Secure Timed Storage', () => {
 		const key = 'myKey';
 		const data = { name: 'John Doe' };
 
-		// Set item with 1 second expiry for testing
-		storage.setItem(key, data, 0.0001); // 0.0001 hours = approximately 0.5 second
+		// Set item with 0.5 second expiry for testing
+		storage.setItem(key, data, 0.0001);
 
-		// Wait for 1.5 seconds (1500 ms) to ensure item has expired
+		// Wait for 0.5 seconds to ensure item has expired
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
-		const retrievedData = storage.getItem(key);
+		const retrievedData = storage.getItem<{ name: string }>(key);
 		assert.equal(retrievedData, null);
 	});
 
@@ -90,8 +90,8 @@ suite('Secure Timed Storage', () => {
 		storage.setItem(key1, data1);
 		storage.setItem(key2, data2);
 
-		const retrievedData1 = storage.getItem(key1);
-		const retrievedData2 = storage.getItem(key2);
+		const retrievedData1 = storage.getItem<{ name: string }>(key1);
+		const retrievedData2 = storage.getItem<{ name: string }>(key2);
 
 		assert.deepEqual(retrievedData1, data1);
 		assert.deepEqual(retrievedData2, data2);
@@ -104,7 +104,7 @@ suite('Secure Timed Storage', () => {
 		storage.setItem(key, data);
 		storage.removeItem(key);
 
-		const retrievedData = storage.getItem(key);
+		const retrievedData = storage.getItem<{ name: string }>(key);
 		assert.equal(retrievedData, null);
 	});
 
@@ -129,12 +129,12 @@ suite('Secure Timed Storage', () => {
 		const key = 'myKey';
 		const data = { name: 'John Doe' };
 
-		// Set item with 1 second expiry for testing
-		storage.setItem(key, data, 0.0001); // 0.0001 hours = approximately 0.5 second
+		// Set item with 0.5 second expiry for testing
+		storage.setItem(key, data, 0.0001);
 
 		assert.isNotNull(localStorage.getItem(key));
 
-		// Wait for 1.5 seconds (1500 ms) to ensure item has expired
+		// Wait for 0.5 seconds to ensure item has expired
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		storage.cleanUp();
@@ -151,7 +151,7 @@ suite('Secure Timed Storage', () => {
 		storage.setItem(key1, data1);
 		storage.setItem(key2, data2);
 
-		const users = storage.query((item) => item?.type === 'user');
+		const users = storage.query<{ type: string; name: string }>((item) => item?.type === 'user');
 
 		assert.equal(users.length, 1);
 		assert.deepEqual(users[0], data1);
@@ -166,7 +166,7 @@ suite('Secure Timed Storage', () => {
 
 		await new Promise((resolve) => setTimeout(resolve, 100));
 
-		const retrievedData = storage.getItem(key);
+		const retrievedData = storage.getItem<{ name: string }>(key);
 		assert.equal(retrievedData, null);
 	});
 
@@ -176,7 +176,7 @@ suite('Secure Timed Storage', () => {
 
 		storage.setItem(key, largeData);
 
-		const retrievedData = storage.getItem(key);
+		const retrievedData = storage.getItem<{ data: string }>(key);
 		assert.deepEqual(retrievedData, largeData);
 	});
 
@@ -189,7 +189,7 @@ suite('Secure Timed Storage', () => {
 		// Manually edit the item in localStorage to an invalid state
 		localStorage.setItem(key, 'invalid data');
 
-		const result = storage.getItem(key);
+		const result = storage.getItem<{ name: string }>(key);
 		assert.equal(result, null);
 	});
 

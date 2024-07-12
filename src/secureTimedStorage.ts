@@ -1,7 +1,7 @@
-import * as CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js';
 
-interface EncryptedData {
-	value: any;
+interface EncryptedData<T> {
+	value: T;
 	expiry: number | null;
 }
 
@@ -11,12 +11,12 @@ export interface StorageInfo {
 }
 
 export interface IStorage {
-	setItem(key: string, value: any, expiryInHours?: number | null): void;
-	getItem(key: string): any | null;
+	setItem(key: string, value: unknown, expiryInHours?: number | null): void;
+	getItem<T>(key: string): T | null;
 	removeItem(key: string): void;
 	getRemainingStorage(): StorageInfo;
 	cleanUp(): void;
-	query(predicate: (item: any) => boolean): any[];
+	query<T>(predicate: (item: T) => boolean): T[];
 }
 
 export interface SecureTimedStorageOptions {
@@ -24,7 +24,7 @@ export interface SecureTimedStorageOptions {
 }
 
 export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOptions): IStorage {
-	const setItem = (key: string, value: any, expiryInHours: number | null = null): void => {
+	const setItem = (key: string, value: unknown, expiryInHours: number | null = null): void => {
 		try {
 			const expiry = expiryInHours !== null ? Date.now() + expiryInHours * 3600000 : null;
 			const encryptedValue = encryptData({ value, expiry });
@@ -35,14 +35,14 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 		}
 	};
 
-	const getItem = (key: string): any | null => {
+	const getItem = <T>(key: string): T | null => {
 		const item = localStorage.getItem(key);
 		if (!item) {
 			return null;
 		}
 
 		try {
-			const decryptedValue = decryptData(item);
+			const decryptedValue = decryptData<T>(item);
 			if (decryptedValue.expiry && Date.now() > decryptedValue.expiry) {
 				localStorage.removeItem(key);
 				return null;
@@ -59,33 +59,28 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 	};
 
 	const getRemainingStorage = (): StorageInfo => {
-		const allKeys = Object.keys(localStorage);
-		let usedBytes = 0;
-		for (const key of allKeys) {
+		const usedBytes = Object.keys(localStorage).reduce((total, key) => {
 			const value = localStorage.getItem(key);
-			if (value) {
-				usedBytes += key.length + value.length;
-			}
-		}
+			return value ? total + key.length + value.length : total;
+		}, 0);
 		return { usedBytes, remainingBytes: 5 * 1024 * 1024 - usedBytes }; // 5MB is the typical localStorage limit
 	};
 
 	const cleanUp = (): void => {
-		const allKeys = Object.keys(localStorage);
-		allKeys.forEach((key) => {
-			const item = getItem(key);
-			if (item && item.expiry && Date.now() > item.expiry) {
+		Object.keys(localStorage).forEach((key) => {
+			const item = getItem<EncryptedData<unknown>>(key);
+			if (item?.expiry && Date.now() > item.expiry) {
 				removeItem(key);
 			}
 		});
 	};
 
-	const query = (predicate: (item: any) => boolean): any[] => {
-		const allData: any[] = [];
+	const query = <T>(predicate: (item: T) => boolean): T[] => {
+		const allData: T[] = [];
 		for (let i = 0; i < localStorage.length; i++) {
 			const key = localStorage.key(i);
 			if (key) {
-				const item = getItem(key);
+				const item = getItem<T>(key);
 				if (item && predicate(item)) {
 					allData.push(item);
 				}
@@ -94,7 +89,7 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 		return allData;
 	};
 
-	const encryptData = (data: EncryptedData): string => {
+	const encryptData = (data: EncryptedData<unknown>): string => {
 		try {
 			return CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString();
 		} catch (error) {
@@ -103,7 +98,7 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 		}
 	};
 
-	const decryptData = (ciphertext: string): EncryptedData => {
+	const decryptData = <T>(ciphertext: string): EncryptedData<T> => {
 		try {
 			const bytes = CryptoJS.AES.decrypt(ciphertext, encryptionKey);
 			const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
