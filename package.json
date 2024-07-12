@@ -1,6 +1,6 @@
 {
 	"name": "secure-timed-storage",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"type": "module",
 	"description": "Secure timed storage library for encrypting and managing data in localStorage with expiry",
 	"license": "MIT",
@@ -21,7 +21,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/PratikDarak/secure-timed-storage"
+		"url": "git+https://github.com/PratikDarak/secure-timed-storage.git"
 	},
 	"exports": {
 		".": {
@@ -60,10 +60,10 @@
 		"husky": "^9.0.11",
 		"lint-staged": "^15.2.7",
 		"prettier": "^3.3.2",
-		"typescript": "^5.2.2",
-		"vite": "^5.2.0",
+		"typescript": "^5.5.3",
+		"vite": "^5.3.3",
 		"vite-plugin-dts": "^3.9.1",
-		"vitest": "^1.6.0"
+		"vitest": "^2.0.2"
 	},
 	"lint-staged": {
 		"*.{ts,tsx}": [

@@ -52,7 +52,7 @@ storage.setItem('myKey', { name: 'John Doe' }, 1); # Expires in 1 hour
 
 Retrieving Data
 ```bash
-const data = storage.getItem('myKey');
+const data = storage.getItem<{ name: string }>('myKey');
 console.log(data); # { name: 'John Doe' }
 ```
 
@@ -65,7 +65,7 @@ storage.removeItem('myKey');
 
 - **getRemainingStorage()**: Retrieves information about remaining localStorage capacity.
 - **cleanUp()**: Removes expired data from localStorage.
-- **query(predicate: (item: any) => boolean)**: Queries and retrieves data based on a predicate function.
+- **query(predicate: (item: T) => boolean)**: Queries and retrieves data based on a predicate function.
 
 ## Example
 
@@ -80,7 +80,7 @@ const storage = createSecureTimedStorage({ encryptionKey: secretKey });
 storage.setItem('userToken', { token: 'abc123' }, 1);
 
 # Retrieve the stored data
-const token = storage.getItem('userToken');
+const token = storage.getItem<{ token: string }>('userToken');
 console.log(token); # { token: 'abc123' }
 
 # Clean up expired data (optional)
@@ -96,7 +96,7 @@ try {
     console.error('Failed to set item:', error.message);
 }
 
-const data = storage.getItem('invalidKey');
+const data = storage.getItem<{ foo: string }>('invalidKey');
 if (data === null) {
     console.warn('Failed to retrieve item or item has expired.');
 }
