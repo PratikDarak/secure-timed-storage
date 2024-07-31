@@ -20,14 +20,16 @@ export interface IStorage {
 }
 
 export interface SecureTimedStorageOptions {
-	encryptionKey: string;
+	encryptionKey?: string;
 }
 
 export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOptions): IStorage {
+	const isEncryptionEnabled = !!encryptionKey;
+
 	const setItem = (key: string, value: unknown, expiryInHours: number | null = null): void => {
 		try {
 			const expiry = expiryInHours !== null ? Date.now() + expiryInHours * 3600000 : null;
-			const encryptedValue = encryptData({ value, expiry });
+			const encryptedValue = isEncryptionEnabled ? encryptData({ value, expiry }) : JSON.stringify({ value, expiry });
 			localStorage.setItem(key, encryptedValue);
 		} catch (error) {
 			console.error('Failed to set item', error);
@@ -42,7 +44,7 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 		}
 
 		try {
-			const decryptedValue = decryptData<T>(item);
+			const decryptedValue = isEncryptionEnabled ? decryptData<T>(item) : JSON.parse(item);
 			if (decryptedValue.expiry && Date.now() > decryptedValue.expiry) {
 				localStorage.removeItem(key);
 				return null;
@@ -91,7 +93,7 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 
 	const encryptData = (data: EncryptedData<unknown>): string => {
 		try {
-			return CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString();
+			return CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey!).toString();
 		} catch (error) {
 			console.error('Encryption failed', error);
 			throw new Error('Encryption failed');
@@ -100,8 +102,8 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 
 	const decryptData = <T>(ciphertext: string): EncryptedData<T> => {
 		try {
-			const bytes = CryptoJS.AES.decrypt(ciphertext, encryptionKey);
-			const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+			const bytes = CryptoJS.AES.decrypt(ciphertext, encryptionKey!);
+			const decryptedData: EncryptedData<T> = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 			return decryptedData;
 		} catch (error) {
 			console.error('Decryption failed', error);
