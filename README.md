@@ -14,7 +14,7 @@ Secure Timed Storage addresses these issues by:
 
 ## Features
 
-- **Encryption**: Encrypts data before storing it in localStorage using AES encryption from `crypto-js`.
+- **Optional Encryption**: Encrypts data before storing it in localStorage using AES encryption from `crypto-js` if an encryption key is provided.
 - **Decryption**: Decrypts data when retrieving it from localStorage.
 - **Expiry**: Supports setting an expiry time for stored data, automatically removing it after expiration.
 - **TypeScript Support**: Fully written in TypeScript for type safety and enhanced developer experience.
@@ -64,6 +64,7 @@ storage.removeItem('myKey');
 ## Additional Methods
 
 - **getRemainingStorage()**: Retrieves information about remaining localStorage capacity.
+- **clearStorage()**: Clears all data from localStorage.
 - **cleanUp()**: Removes expired data from localStorage.
 - **query(predicate: (item: T) => boolean)**: Queries and retrieves data based on a predicate function.
 

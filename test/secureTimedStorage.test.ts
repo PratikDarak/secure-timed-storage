@@ -151,6 +151,25 @@ suite('Secure Timed Storage', () => {
 		assert.equal(storageInfo.remainingBytes, 5 * 1024 * 1024 - expectedUsedBytes); // Assuming 5MB limit
 	});
 
+	test('should clear all items from storage', () => {
+		storage = createSecureTimedStorage(optionsWithEncryption);
+		const key1 = 'key1';
+		const data1 = { name: 'John Doe' };
+		const key2 = 'key2';
+		const data2 = { name: 'Jane Smith' };
+
+		storage.setItem(key1, data1);
+		storage.setItem(key2, data2);
+
+		assert.deepEqual(storage.getItem<{ name: string }>(key1), data1);
+		assert.deepEqual(storage.getItem<{ name: string }>(key2), data2);
+
+		storage.clearStorage();
+
+		assert.deepEqual(storage.getItem<{ name: string }>(key1), null);
+		assert.deepEqual(storage.getItem<{ name: string }>(key2), null);
+	});
+
 	test('should remove expired items during clean up', async () => {
 		storage = createSecureTimedStorage(optionsWithEncryption);
 		const key = 'myKey';

@@ -15,6 +15,7 @@ export interface IStorage {
 	getItem<T>(key: string): T | null;
 	removeItem(key: string): void;
 	getRemainingStorage(): StorageInfo;
+	clearStorage(): void;
 	cleanUp(): void;
 	query<T>(predicate: (item: T) => boolean): T[];
 }
@@ -68,6 +69,10 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 		return { usedBytes, remainingBytes: 5 * 1024 * 1024 - usedBytes }; // 5MB is the typical localStorage limit
 	};
 
+	const clearStorage = (): void => {
+		localStorage.clear();
+	};
+
 	const cleanUp = (): void => {
 		Object.keys(localStorage).forEach((key) => {
 			const item = getItem<EncryptedData<unknown>>(key);
@@ -116,6 +121,7 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 		getItem,
 		removeItem,
 		getRemainingStorage,
+		clearStorage,
 		cleanUp,
 		query,
 	};
