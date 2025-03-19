@@ -242,4 +242,87 @@ suite('Secure Timed Storage', () => {
 		const result = storage.getItem<{ name: string }>(key);
 		assert.equal(result, null);
 	});
+
+	test('should return correct expiry time for item with expiry', () => {
+		storage = createSecureTimedStorage(optionsWithEncryption);
+		const key = 'expiryTest';
+		const data = { name: 'John Doe' };
+		const expiryHours = 1;
+
+		storage.setItem(key, data, expiryHours);
+		const expiry = storage.getExpiry(key);
+
+		assert.isNotNull(expiry);
+		// Check if expiry time is approximately correct (within 1 second tolerance)
+		const expectedExpiry = Date.now() + expiryHours * 3600000;
+		assert.approximately(expiry!, expectedExpiry, 1000);
+	});
+
+	test('should return null expiry for item without expiry', () => {
+		storage = createSecureTimedStorage(optionsWithEncryption);
+		const key = 'noExpiryTest';
+		const data = { name: 'John Doe' };
+
+		storage.setItem(key, data); // No expiry time set
+		const expiry = storage.getExpiry(key);
+
+		assert.isNull(expiry);
+	});
+
+	test('should return null for non-existent item', () => {
+		storage = createSecureTimedStorage(optionsWithEncryption);
+		const expiry = storage.getExpiry('nonExistentKey');
+
+		assert.isNull(expiry);
+	});
+
+	test('should handle expiry for both encrypted and unencrypted storage', () => {
+		// Test with encryption
+		const encryptedStorage = createSecureTimedStorage(optionsWithEncryption);
+		const key = 'testKey';
+		const data = { name: 'John Doe' };
+		const expiryHours = 1;
+
+		encryptedStorage.setItem(key, data, expiryHours);
+		const encryptedExpiry = encryptedStorage.getExpiry(key);
+
+		assert.isNotNull(encryptedExpiry);
+
+		// Test without encryption
+		const unencryptedStorage = createSecureTimedStorage(optionsWithoutEncryption);
+		unencryptedStorage.setItem(key, data, expiryHours);
+		const unencryptedExpiry = unencryptedStorage.getExpiry(key);
+
+		assert.isNotNull(unencryptedExpiry);
+	});
+
+	test('should return null expiry when data is corrupted', () => {
+		storage = createSecureTimedStorage(optionsWithEncryption);
+		const key = 'corruptedTest';
+
+		// Manually set corrupted data
+		localStorage.setItem(key, 'corrupted data');
+
+		const expiry = storage.getExpiry(key);
+		assert.isNull(expiry);
+	});
+
+	test('should maintain expiry after updating item', () => {
+		storage = createSecureTimedStorage(optionsWithEncryption);
+		const key = 'updateTest';
+		const initialData = { name: 'John Doe' };
+		const updatedData = { name: 'Jane Doe' };
+		const expiryHours = 1;
+
+		storage.setItem(key, initialData, expiryHours);
+		const initialExpiry = storage.getExpiry(key);
+
+		// Update the item with same expiry
+		storage.setItem(key, updatedData, expiryHours);
+		const updatedExpiry = storage.getExpiry(key);
+
+		assert.isNotNull(initialExpiry);
+		assert.isNotNull(updatedExpiry);
+		assert.approximately(updatedExpiry!, initialExpiry!, 1000);
+	});
 });

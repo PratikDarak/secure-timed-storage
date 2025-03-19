@@ -14,6 +14,7 @@ export interface IStorage {
 	setItem(key: string, value: unknown, expiryInHours?: number | null): void;
 	getItem<T>(key: string): T | null;
 	removeItem(key: string): void;
+	getExpiry(key: string): number | null;
 	getRemainingStorage(): StorageInfo;
 	clearStorage(): void;
 	cleanUp(): void;
@@ -59,6 +60,21 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 
 	const removeItem = (key: string): void => {
 		localStorage.removeItem(key);
+	};
+
+	const getExpiry = (key: string): number | null => {
+		const item = localStorage.getItem(key);
+		if (!item) {
+			return null;
+		}
+
+		try {
+			const decryptedValue = isEncryptionEnabled ? decryptData<unknown>(item) : JSON.parse(item);
+			return decryptedValue.expiry;
+		} catch (error) {
+			console.error('Failed to get expiry', error);
+			return null;
+		}
 	};
 
 	const getRemainingStorage = (): StorageInfo => {
@@ -120,6 +136,7 @@ export function createSecureTimedStorage({ encryptionKey }: SecureTimedStorageOp
 		setItem,
 		getItem,
 		removeItem,
+		getExpiry,
 		getRemainingStorage,
 		clearStorage,
 		cleanUp,
