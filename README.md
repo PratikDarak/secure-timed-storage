@@ -56,6 +56,12 @@ const data = storage.getItem<{ name: string }>('myKey');
 console.log(data); # { name: 'John Doe' }
 ```
 
+Retrieving Expiry
+```bash
+const expiry = storage.getExpiry('userToken');
+console.log(expiry); # Returns timestamp when the item will expire
+```
+
 Removing Data
 ```bash
 storage.removeItem('myKey');
@@ -83,6 +89,13 @@ storage.setItem('userToken', { token: 'abc123' }, 1);
 # Retrieve the stored data
 const token = storage.getItem<{ token: string }>('userToken');
 console.log(token); # { token: 'abc123' }
+
+# Retrieve expiry timestamp
+const expiry = storage.getExpiry('userToken');
+if (expiry !== null) {
+    const remainingTime = expiry - Date.now();
+    console.log(`Item expires in ${remainingTime / 1000} seconds`);
+}
 
 # Clean up expired data (optional)
 storage.cleanUp();
@@ -119,6 +132,7 @@ Contributions are welcome! Please follow these guidelines before contributing:
 - **Build**: `npm run build` - Compiles TypeScript files and builds the project.
 - **Lint**: `npm run lint` - Lints TypeScript files using ESLint.
 - **Format**: `npm run format` - Formats TypeScript files using Prettier.
+- **Release**: `npm run release` - Tests, builds and publishes updated version to npm.
 - **Test**: `npm run test` - Runs the test cases using Vitest.
 
 ## License
